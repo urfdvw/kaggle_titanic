@@ -1,0 +1,5 @@
+- following [this](https://adityashrm21.github.io/Setting-Up-Kaggle/) I installed the kaggle api.
+- [About how to use the api](https://medium.com/@move37timm/using-kaggle-api-for-google-colaboratory-d18645f93648)
+    - but ```kaggle competitions download  -c titanic``` is used without ```-p``` to download to current directory.
+- as the downloaded file is .zip, I used [this](https://discuss.analyticsvidhya.com/t/how-to-read-zip-file-directly-in-python/1659/5) method to read the file as pd data frame.
+- to use the files as variables, use [this](https://stackoverflow.com/a/11553769)
