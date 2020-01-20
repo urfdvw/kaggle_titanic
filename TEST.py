@@ -80,14 +80,13 @@ for i in range(1, 4):
 # I tend to no use this information
 # If I have to, I will first try a simple lable: missing or not missing.
 # %% pre processing data
-
-def convert_data(raw_data):
+def convert_data(data_frame):
     data = pd.DataFrame()
     # Pclass
-    classes = raw_data.train['Pclass'].unique()
+    classes = data_frame['Pclass'].unique()
     classes.sort()
     for c in classes:
-        data['Pc' + str(c)] = (1 * (raw_data.train['Pclass'] == c))
+        data['Pc' + str(c)] = (1 * (data_frame['Pclass'] == c))
 
     # Special title
     ut = list(unique_title)
@@ -102,31 +101,37 @@ def convert_data(raw_data):
     data['Elite'] = pd.Series([(1 if t in elite_title else 0) for t in title])
 
     # Gender
-    data['Male'] = (1 * (raw_data.train['Sex'] == 'male'))
+    data['Male'] = (1 * (data_frame['Sex'] == 'male'))
     male = data['Male'].tolist()
     unmarried = [t in {'Miss.', 'Mlle.'} for t in title]
     data['Female1'] = pd.Series([1 if male[i]==0 and unmarried[i] else 0 for i in range(len(male))])
     data['Female2'] = pd.Series([1 if male[i]==0 and not unmarried[i] else 0 for i in range(len(male))])
 
     # copy others
-    data['Age'] = raw_data.train['Age']
-    data['SibSp'] = raw_data.train['SibSp']
-    data['Parch'] = raw_data.train['Parch']
-    data['Fare'] = raw_data.train['Fare']
+    data['Age'] = data_frame['Age']
+    data['SibSp'] = data_frame['SibSp']
+    data['Parch'] = data_frame['Parch']
+    data['Fare'] = data_frame['Fare']
 
     # Embarked
-    data['Embarked'] = (1 * (raw_data.train['Embarked'] == 'S'))
+    data['Embarked'] = (1 * (data_frame['Embarked'] == 'S'))
     return data
 
 
 # visualize
-data = convert_data(raw_data)
+data = convert_data(raw_data.train)
 print(data.describe())
 data.head()
 
-# to np
-data = data.values
+# training data
+u = data.values
 
 # output
 t = raw_data.train['Survived'].values
+
+# test data
+x = convert_data(raw_data.test).values
+# %% linear regression
+y = x @ np.linalg.inv(u.transpose() @ u) @ u.transpose() @ t
+print(y)
 # %%
