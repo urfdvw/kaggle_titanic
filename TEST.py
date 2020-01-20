@@ -57,6 +57,12 @@ class pre_processing:
         ei = [2, 8, 3, 6, 4, 15, 5, 11]
         self.service_title = {ut[i] for i in si}
         self.elite_title = {ut[i] for i in ei}
+
+        # normalization
+        self.mu_age = data_frame['Age'].mean()
+        self.std_age = data_frame['Age'].std()
+        self.mu_fare = data_frame['Fare'].mean()
+        self.std_fare = data_frame['Fare'].std()
         return
 
     def __call__(self, data_frame):
@@ -85,12 +91,14 @@ class pre_processing:
         # Age need impute
         data['Age'] = data_frame['Age']
         data['Age'] = data['Age'].fillna(data['Age'].median())
+        data['Age'] = (data['Age'] - self.mu_age) / self.std_age
 
         # copy others
         data['SibSp'] = data_frame['SibSp']
         data['Parch'] = data_frame['Parch']
         data['Fare'] = data_frame['Fare']
         data['Fare'] = data['Fare'].fillna(data['Fare'].median())
+        data['Fare'] = (data['Fare'] - self.mu_fare) / self.std_fare
 
         # Embarked
         data['Embarked'] = (1 * (data_frame['Embarked'] == 'S'))
@@ -109,6 +117,7 @@ t = raw_data.train['Survived'].values
 # test data
 x = pre_pro(raw_data.test).values
 
+
 # %% sklearn methods test
 x_train, x_test, y_train, y_test = train_test_split(u, t, test_size=0.33)
 
@@ -116,14 +125,14 @@ classifiers = [
     LogisticRegression(),
     KNeighborsClassifier(10),
     SVC(kernel="linear", C=0.025),
-    # SVC(gamma=2, C=1),
-    # GaussianProcessClassifier(1.0 * RBF(1.0)),
+    SVC(gamma=2, C=1),
+    GaussianProcessClassifier(1.0 * RBF(1.0)),
     DecisionTreeClassifier(max_depth=5),
     RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1),
     MLPClassifier(alpha=1, max_iter=1000),
     AdaBoostClassifier(),
     GaussianNB(),
-    # QuadraticDiscriminantAnalysis()
+    QuadraticDiscriminantAnalysis()
     ]
 
 y_vote = np.zeros_like(y_test) * 0.1
