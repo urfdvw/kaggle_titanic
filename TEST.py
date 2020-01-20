@@ -112,7 +112,7 @@ data.head()
 # %% df to np data prepare
 # training data
 u = data.values
-# train output
+# training output
 t = raw_data.train['Survived'].values
 # test data
 x = pre_pro(raw_data.test).values
