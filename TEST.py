@@ -1,5 +1,6 @@
 # %%
 import pandas as pd
+import numpy as np
 import zipfile
 import matplotlib.pyplot as plt
 # %% read data as pd
@@ -39,15 +40,14 @@ for c in raw_data.test['Pclass'].unique():
     print(temp.describe())
 
 # No, the price is not the same for any class
-
 # %% are the babies free
+
 temp = raw_data.train['Fare'][raw_data.train['Age'] <= 2.0]
 plt.figure()
 temp.hist(bins=50)
 plt.show()
 print('babies')
 print(temp.describe())
-
 # %% Name, see how many titles are there
 
 names = raw_data.train['Name'].tolist()
@@ -55,7 +55,7 @@ title = ['' for i in range(len(names))]
 for i, n in enumerate(names):
     words = n.split(' ')
     for w in words:
-        if '.' in w :
+        if '.' in w:
             title[i] = w
             break
 
@@ -68,9 +68,6 @@ for t in unique_title:
 # Other specical titles gives two infomations
 #   nob. or not
 #   service or not
-
-# TODO
-
 # %% check Cabin
 for i in range(1, 4):
     temp = raw_data.train['Cabin'][raw_data.train['Pclass'] == i]
@@ -78,9 +75,58 @@ for i in range(1, 4):
 
 # in any of the classes there are missing data.
 # It looks like 1st class has less missin data.
-# I just wonder why the data are missing? 
-# Is is because that dead people cannot report their cabin?
+# I just wonder why the data are missing?
+# Is it because that dead people cannot report their cabin?
 # I tend to no use this information
 # If I have to, I will first try a simple lable: missing or not missing.
+# %% pre processing data
 
+def convert_data(raw_data):
+    data = pd.DataFrame()
+    # Pclass
+    classes = raw_data.train['Pclass'].unique()
+    classes.sort()
+    for c in classes:
+        data['Pc' + str(c)] = (1 * (raw_data.train['Pclass'] == c))
+
+    # Special title
+    ut = list(unique_title)
+    ut.sort()
+    # for i in range(len(ut)):
+    #     print(i,ut[i])
+    si = [0, 16, 1, 7]
+    ei = [2, 8, 3, 6, 4, 15, 5, 11]
+    service_title = {ut[i] for i in si}
+    elite_title = {ut[i] for i in ei}
+    data['Service'] = pd.Series([(1 if t in service_title else 0) for t in title])
+    data['Elite'] = pd.Series([(1 if t in elite_title else 0) for t in title])
+
+    # Gender
+    data['Male'] = (1 * (raw_data.train['Sex'] == 'male'))
+    male = data['Male'].tolist()
+    unmarried = [t in {'Miss.', 'Mlle.'} for t in title]
+    data['Female1'] = pd.Series([1 if male[i]==0 and unmarried[i] else 0 for i in range(len(male))])
+    data['Female2'] = pd.Series([1 if male[i]==0 and not unmarried[i] else 0 for i in range(len(male))])
+
+    # copy others
+    data['Age'] = raw_data.train['Age']
+    data['SibSp'] = raw_data.train['SibSp']
+    data['Parch'] = raw_data.train['Parch']
+    data['Fare'] = raw_data.train['Fare']
+
+    # Embarked
+    data['Embarked'] = (1 * (raw_data.train['Embarked'] == 'S'))
+    return data
+
+
+# visualize
+data = convert_data(raw_data)
+print(data.describe())
+data.head()
+
+# to np
+data = data.values
+
+# output
+t = raw_data.train['Survived'].values
 # %%
