@@ -121,19 +121,22 @@ x = pre_pro(raw_data.test).values
 # %% sklearn methods test
 x_train, x_test, y_train, y_test = train_test_split(u, t, test_size=0.33)
 
-classifiers = [
-    LogisticRegression(),
-    KNeighborsClassifier(10),
-    SVC(kernel="linear", C=0.025),
-    SVC(gamma=2, C=1),
-    GaussianProcessClassifier(1.0 * RBF(1.0)),
-    DecisionTreeClassifier(max_depth=5),
-    RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1),
-    MLPClassifier(alpha=1, max_iter=1000),
-    AdaBoostClassifier(),
-    GaussianNB(),
-    QuadraticDiscriminantAnalysis()
-    ]
+# classifiers = [
+#     LogisticRegression(),
+#     KNeighborsClassifier(10),
+#     SVC(kernel="linear", C=0.025),
+#     SVC(gamma=2, C=1),
+#     GaussianProcessClassifier(1.0 * RBF(1.0)),
+#     DecisionTreeClassifier(max_depth=5),
+#     RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1),
+#     MLPClassifier(alpha=1, max_iter=1000),
+#     AdaBoostClassifier(),
+#     GaussianNB(),
+#     QuadraticDiscriminantAnalysis()
+#     ]
+
+
+classifiers = [MLPClassifier(alpha=1, max_iter=1000)]
 
 y_vote = np.zeros_like(y_test) * 0.1
 w = np.zeros(len(classifiers))
