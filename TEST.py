@@ -107,8 +107,11 @@ def convert_data(data_frame):
     data['Female1'] = pd.Series([1 if male[i]==0 and unmarried[i] else 0 for i in range(len(male))])
     data['Female2'] = pd.Series([1 if male[i]==0 and not unmarried[i] else 0 for i in range(len(male))])
 
+    # Age need impute
+    data['Age'] = data_frame['Age'] 
+    data['Age'] = data['Age'].fillna(data['Age'].median())
+
     # copy others
-    data['Age'] = data_frame['Age']
     data['SibSp'] = data_frame['SibSp']
     data['Parch'] = data_frame['Parch']
     data['Fare'] = data_frame['Fare']
