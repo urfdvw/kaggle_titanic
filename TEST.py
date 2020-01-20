@@ -20,7 +20,7 @@ class data_reader:
 
 
 raw_data = data_reader(
-    '/home/hwang/Documents/Github/kaggle_titanic/titanic.zip')
+    './titanic.zip')
 raw_data.train.head()
 # %% simple guesses and visualization #############################
 
@@ -136,5 +136,7 @@ t = raw_data.train['Survived'].values
 x = convert_data(raw_data.test).values
 # %% linear regression
 y = x @ np.linalg.inv(u.transpose() @ u) @ u.transpose() @ t
-print(y)
+out = raw_data.gender_submission.copy()
+out['Survived'] = pd.Series([1 if yi > 0.5 else 0 for yi in y])
+out.to_csv('LR.csv', index=False)
 # %%
