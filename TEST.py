@@ -115,6 +115,7 @@ def convert_data(data_frame):
     data['SibSp'] = data_frame['SibSp']
     data['Parch'] = data_frame['Parch']
     data['Fare'] = data_frame['Fare']
+    data['Fare'] = data['Fare'].fillna(data['Fare'].median())
 
     # Embarked
     data['Embarked'] = (1 * (data_frame['Embarked'] == 'S'))
@@ -126,17 +127,65 @@ data = convert_data(raw_data.train)
 print(data.describe())
 data.head()
 
+# %% np data prepare
 # training data
 u = data.values
-
-# output
+# train output
 t = raw_data.train['Survived'].values
-
 # test data
 x = convert_data(raw_data.test).values
-# %% linear regression
-y = x @ np.linalg.inv(u.transpose() @ u) @ u.transpose() @ t
+# %% sklearn methods test
+from sklearn.model_selection import train_test_split
+x_train, x_test, y_train, y_test = train_test_split(u, t, test_size=0.33)
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.datasets import make_moons, make_circles, make_classification
+from sklearn.neural_network import MLPClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.gaussian_process import GaussianProcessClassifier
+from sklearn.gaussian_process.kernels import RBF
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
+
+classifiers = [
+    LogisticRegression(),
+    KNeighborsClassifier(3),
+    SVC(kernel="linear", C=0.025),
+    SVC(gamma=2, C=1),
+    GaussianProcessClassifier(1.0 * RBF(1.0)),
+    DecisionTreeClassifier(max_depth=5),
+    RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1),
+    MLPClassifier(alpha=1, max_iter=1000),
+    AdaBoostClassifier(),
+    GaussianNB(),
+    QuadraticDiscriminantAnalysis()]
+
+y_vote = np.zeros_like(y_test) * 0.1
+w = np.zeros(len(classifiers))
+for i, clf in enumerate(classifiers):
+    clf.fit(x_train, y_train)
+    y_predict = clf.predict(x_test)
+    w[i] = np.mean([1.0 if y_predict[i] == y_test[i] else 0.0 for i in range(len(y_test))])
+    print(w[i])
+    y_vote += w[i]**2 * y_predict
+
+print('final-----------------------')
+y_final = 1.0 * (y_vote > (np.sum(w**2) / 2))
+print(np.mean([1 if y_final[i] == y_test[i] else 0 for i in range(len(y_test))]))
+
+
+# %% out
+y_vote = np.zeros(len(x)) * 0.1
+for i, clf in enumerate(classifiers):
+    clf.fit(u, t)
+    y_predict = clf.predict(x)
+    y_vote += w[i]**2 * y_predict
+y_final = 1 * (y_vote > (np.sum(w**2) / 2))
 out = raw_data.gender_submission.copy()
-out['Survived'] = pd.Series([1 if yi > 0.5 else 0 for yi in y])
+out['Survived'] = pd.Series(y_final)
 out.to_csv('LR.csv', index=False)
 # %%
